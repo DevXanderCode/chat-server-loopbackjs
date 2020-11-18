@@ -4,7 +4,7 @@ var models = require('./server').models;
 const ws = new WebSocket.Server({ port: 8080 });
 
 ws.on('connection', (ws) => {
-	const Login = (email, password) => {
+	const login = (email, password) => {
 		models.User.login(email, password, (err, result) => {
 			if (err) {
 				ws.send(
@@ -63,7 +63,8 @@ ws.on('connection', (ws) => {
 							);
 						}
 					});
-
+				case 'LOGIN':
+					login(parsed.data.email, parsed.data.password);
 				default:
 					console.log('Nothing To See Here');
 			}
