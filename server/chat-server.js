@@ -4,6 +4,27 @@ var models = require('./server').models;
 const ws = new WebSocket.Server({ port: 8080 });
 
 ws.on('connection', (ws) => {
+	const Login = (email, password) => {
+		models.User.login(email, password, (err, result) => {
+			if (err) {
+				ws.send(
+					JSON.stringify({
+						type: 'ERROR',
+						error: err
+					})
+				);
+			} else {
+				models.User.findOne({ where: { id: result.userId }, include: 'Profile' }, (err2, user) => {
+					if (err2) {
+						ws.send(JSON.stringify({ type: 'ERROR', error: err2 }));
+					} else {
+						ws.send(JSON.stringify({ type: 'LOGGEDIN', data: { session: result, user: user } }));
+					}
+				});
+			}
+		});
+	};
+
 	ws.on('message', (message) => {
 		console.log('Got Message', JSON.parse(message));
 
