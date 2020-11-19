@@ -4,8 +4,9 @@ var models = require('./server').models;
 const ws = new WebSocket.Server({ port: 8080 });
 
 ws.on('connection', (ws) => {
-	const login = (email, password) => {
-		models.User.login(email, password, (err, result) => {
+	function login(email, password) {
+		console.log('Logging the EM', email, password);
+		models.User.login({ email, password }, (err, result) => {
 			if (err) {
 				ws.send(
 					JSON.stringify({
@@ -23,7 +24,7 @@ ws.on('connection', (ws) => {
 				});
 			}
 		});
-	};
+	}
 
 	ws.on('message', (message) => {
 		console.log('Got Message', JSON.parse(message));
