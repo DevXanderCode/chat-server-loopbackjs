@@ -3,6 +3,8 @@ var models = require('./server').models;
 
 const ws = new WebSocket.Server({ port: 8080 });
 
+const clients = [];
+
 ws.on('connection', (ws) => {
 	function login(email, password) {
 		console.log('Logging the EM', email, password);
@@ -19,6 +21,12 @@ ws.on('connection', (ws) => {
 					if (err2) {
 						ws.send(JSON.stringify({ type: 'ERROR', error: err2 }));
 					} else {
+						const userObject = {
+							...user,
+							ws: ws
+						};
+						clients.push(userObject);
+						console.log('Logging Clients', clients);
 						ws.send(JSON.stringify({ type: 'LOGGEDIN', data: { session: result, user: user } }));
 					}
 				});
