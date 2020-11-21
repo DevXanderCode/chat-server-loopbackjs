@@ -26,7 +26,7 @@ ws.on('connection', (ws) => {
 							ws: ws
 						};
 						clients.push(userObject);
-						console.log('Logging Clients', clients);
+						console.log('Logging Clients', clients.length, clients);
 						ws.send(JSON.stringify({ type: 'LOGGEDIN', data: { session: result, user: user } }));
 					}
 				});
@@ -74,6 +74,20 @@ ws.on('connection', (ws) => {
 					});
 				case 'LOGIN':
 					login(parsed.data.email, parsed.data.password);
+				case 'SEARCH':
+					console.log('searching for :', parsed.data);
+					models.User.find({ where: { email: { like: parsed.data } } }, (err, users) => {
+						if (!err && users) {
+							ws.send(
+								JSON.stringify({
+									type: 'GOT_USERS',
+									data: {
+										users
+									}
+								})
+							);
+						}
+					});
 				default:
 					console.log('Nothing To See Here');
 			}
