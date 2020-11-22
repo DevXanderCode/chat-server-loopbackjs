@@ -72,8 +72,10 @@ ws.on('connection', (ws) => {
 							);
 						}
 					});
+					break;
 				case 'LOGIN':
 					login(parsed.data.email, parsed.data.password);
+					break;
 				case 'SEARCH':
 					console.log('searching for :', parsed.data);
 					models.User.find({ where: { email: { like: parsed.data } } }, (err, users) => {
@@ -88,6 +90,43 @@ ws.on('connection', (ws) => {
 							);
 						}
 					});
+					break;
+				case 'FIND_THREAD':
+					models.Thread.findOne(
+						{
+							where: {
+								and: [ { users: { like: parsed.data[0] } }, { users: { like: parsed.data[1] } } ]
+							}
+						},
+						(err, thread) => {
+							if (!err && thread) {
+								ws.send(
+									JSON.stringify({
+										type: 'ADD_THREAD',
+										data: thread
+									})
+								);
+							} else {
+								models.Thread.create(
+									{ lastUpdated: new Date(), users: parsed.data },
+									(err2, thread) => {
+										if (!err2 && thread) {
+											console.log('logging Clients', clients);
+											clients.filter((u) => thread.users.indexOf(u.id) > -1).map((client) =>
+												client.ws.send(
+													JSON.stringify({
+														type: 'ADD_THREAD',
+														data: thread
+													})
+												)
+											);
+										}
+									}
+								);
+							}
+						}
+					);
+					break;
 				default:
 					console.log('Nothing To See Here');
 			}
