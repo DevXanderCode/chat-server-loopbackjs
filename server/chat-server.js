@@ -22,7 +22,8 @@ ws.on('connection', (ws) => {
 						ws.send(JSON.stringify({ type: 'ERROR', error: err2 }));
 					} else {
 						const userObject = {
-							...user,
+							id: user.id,
+							email: user.email,
 							ws: ws
 						};
 						clients.push(userObject);
@@ -111,15 +112,16 @@ ws.on('connection', (ws) => {
 									{ lastUpdated: new Date(), users: parsed.data },
 									(err2, thread) => {
 										if (!err2 && thread) {
-											console.log('logging Clients', clients);
-											clients.filter((u) => thread.users.indexOf(u.id) > -1).map((client) =>
-												client.ws.send(
-													JSON.stringify({
-														type: 'ADD_THREAD',
-														data: thread
-													})
-												)
-											);
+											clients
+												.filter((u) => thread.users.indexOf(u.id.toString()) > -1)
+												.map((client) =>
+													client.ws.send(
+														JSON.stringify({
+															type: 'ADD_THREAD',
+															data: thread
+														})
+													)
+												);
 										}
 									}
 								);
