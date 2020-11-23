@@ -74,6 +74,21 @@ ws.on('connection', (ws) => {
 						}
 					});
 					break;
+				case 'CONNECT_WITH_TOKEN':
+					models.User.findById(parsed.data.userId, (err, user) => {
+						if (!err && user) {
+							const userObject = {
+								id: user.id,
+								email: user.email,
+								ws: ws
+							};
+
+							clients.push(userObject);
+
+							// ws.send(JSON.stringify({ type: 'LOGGEDIN', data: { session: result, user: user } }));
+						}
+					});
+					break;
 				case 'LOGIN':
 					login(parsed.data.email, parsed.data.password);
 					break;
@@ -128,6 +143,8 @@ ws.on('connection', (ws) => {
 							}
 						}
 					);
+					break;
+				case 'THREAD_LOAD':
 					break;
 				default:
 					console.log('Nothing To See Here');
