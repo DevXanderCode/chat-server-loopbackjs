@@ -5,11 +5,11 @@ const ws = new WebSocket.Server({ port: 8080 });
 
 const clients = [];
 
-const printClientCount = () => {
-	console.log('Client Count: ', clients.length);
-};
+// const printClientCount = () => {
+// 	console.log('Client Count: ', clients.length);
+// };
 
-setInterval(printClientCount, 1000);
+// setInterval(printClientCount, 1000);
 
 ws.on('connection', (ws) => {
 	function getInitialThreads(userId) {
