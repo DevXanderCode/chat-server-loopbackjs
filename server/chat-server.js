@@ -5,7 +5,26 @@ const ws = new WebSocket.Server({ port: 8080 });
 
 const clients = [];
 
+const printClientCount = () => {
+	console.log('Client Count: ', clients.length);
+};
+
+setInterval(printClientCount, 1000);
+
 ws.on('connection', (ws) => {
+	function getInitialThreads(userId) {
+		models.Thread.find({ where: {} }, (err, threads) => {
+			if (!err && threads) {
+				ws.send(
+					JSON.stringify({
+						type: 'INITIAL_THREADS',
+						data: threads
+					})
+				);
+			}
+		});
+	}
+
 	function login(email, password) {
 		console.log('Logging the EM', email, password);
 		models.User.login({ email, password }, (err, result) => {
@@ -21,12 +40,15 @@ ws.on('connection', (ws) => {
 					if (err2) {
 						ws.send(JSON.stringify({ type: 'ERROR', error: err2 }));
 					} else {
+						ws.uid = user.id + new Date().getTime().toString();
+
 						const userObject = {
 							id: user.id,
 							email: user.email,
 							ws: ws
 						};
 						clients.push(userObject);
+						getInitialThreads(user.id);
 						console.log('Logging Clients', clients.length, clients);
 						ws.send(JSON.stringify({ type: 'LOGGEDIN', data: { session: result, user: user } }));
 					}
@@ -34,6 +56,20 @@ ws.on('connection', (ws) => {
 			}
 		});
 	}
+
+	ws.on('close', (req) => {
+		console.log('Request Close', req);
+		let clientIndex = -1;
+		clients.map((c, i) => {
+			if (c.ws._closeCode === req) {
+				clientIndex = i;
+			}
+			if (clientIndex > -1) {
+				clients.splice(clientIndex, 1);
+			}
+			console.log(c.ws._closeCode, c.id);
+		});
+	});
 
 	ws.on('message', (message) => {
 		console.log('Got Message', JSON.parse(message));
@@ -77,6 +113,8 @@ ws.on('connection', (ws) => {
 				case 'CONNECT_WITH_TOKEN':
 					models.User.findById(parsed.data.userId, (err, user) => {
 						if (!err && user) {
+							ws.uid = user.id + new Date().getTime().toString();
+
 							const userObject = {
 								id: user.id,
 								email: user.email,
@@ -84,8 +122,7 @@ ws.on('connection', (ws) => {
 							};
 
 							clients.push(userObject);
-
-							// ws.send(JSON.stringify({ type: 'LOGGEDIN', data: { session: result, user: user } }));
+							getInitialThreads(user.id);
 						}
 					});
 					break;
@@ -108,6 +145,7 @@ ws.on('connection', (ws) => {
 					});
 					break;
 				case 'FIND_THREAD':
+					console.log('logging parse data', parsed.data[0], parsed.data[1]);
 					models.Thread.findOne(
 						{
 							where: {
@@ -116,6 +154,7 @@ ws.on('connection', (ws) => {
 						},
 						(err, thread) => {
 							if (!err && thread) {
+								console.log('thread exist');
 								ws.send(
 									JSON.stringify({
 										type: 'ADD_THREAD',
