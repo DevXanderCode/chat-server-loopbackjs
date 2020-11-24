@@ -13,7 +13,7 @@ const clients = [];
 
 ws.on('connection', (ws) => {
 	function getInitialThreads(userId) {
-		models.Thread.find({ where: {} }, (err, threads) => {
+		models.Thread.find({ where: {}, include: 'Messages' }, (err, threads) => {
 			if (!err && threads) {
 				ws.send(
 					JSON.stringify({
@@ -184,6 +184,25 @@ ws.on('connection', (ws) => {
 					);
 					break;
 				case 'THREAD_LOAD':
+					models.Thread.find(
+						{
+							where: { threadId: parsed.data.threadId },
+							order: 'data DESC',
+							skip: parsed.data.skip,
+							limit: 10
+						},
+						(err, messages) => {
+							if (!err && messages) {
+								ws.send(
+									JSON.stringify({
+										type: 'GOT_MESSAGES',
+										threadId: parsed.data.threadId,
+										messages
+									})
+								);
+							}
+						}
+					);
 					break;
 				default:
 					console.log('Nothing To See Here');
