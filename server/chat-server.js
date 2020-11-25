@@ -152,8 +152,9 @@ ws.on('connection', (ws) => {
 								and: [ { users: { like: parsed.data[0] } }, { users: { like: parsed.data[1] } } ]
 							}
 						},
-						(err, thread) => {
-							if (!err && thread) {
+						(err2, thread) => {
+							console.log('Logging Error 2 and thread', err2, thread);
+							if (!err2 && thread) {
 								console.log('thread exist');
 								ws.send(
 									JSON.stringify({
@@ -203,6 +204,25 @@ ws.on('connection', (ws) => {
 							}
 						}
 					);
+					break;
+				case 'ADD_MESSAGE':
+					models.Thread.findById(parsed.data.threadId, (err, thread) => {
+						if (!err && thread) {
+							models.Message.insert(parsed.data, (err3, message) => {
+								if (!err3 && message) {
+									clients.filter((client) => thread.users.indexOf(client.id) > -1).map((client) => {
+										client.ws.send(
+											JSON.stringify({
+												type: 'ADD_MESSAGE_T_THREAD',
+												threadId: parsed.data.threadId,
+												message
+											})
+										);
+									});
+								}
+							});
+						}
+					});
 					break;
 				default:
 					console.log('Nothing To See Here');
