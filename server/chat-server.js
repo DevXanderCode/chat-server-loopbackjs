@@ -213,7 +213,7 @@ ws.on('connection', (ws) => {
 									clients.filter((client) => thread.users.indexOf(client.id) > -1).map((client) => {
 										client.ws.send(
 											JSON.stringify({
-												type: 'ADD_MESSAGE_T_THREAD',
+												type: 'ADD_MESSAGE_TO_THREAD',
 												threadId: parsed.data.threadId,
 												message
 											})
