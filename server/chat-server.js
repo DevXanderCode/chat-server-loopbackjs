@@ -18,7 +18,7 @@ ws.on('connection', async (ws) => {
 		models.Thread.find({ where: {}, include: 'Messages' }, (err, threads) => {
 			if (!err && threads) {
 				threads.map((thread, idx) => {
-					models.Users.find({ where: { id: { inq: thread.users } } }, (err3, user) => {
+					models.User.find({ where: { id: { inq: thread.users } } }, (err3, user) => {
 						thread.profiles = users;
 
 						if (idx === thread.length - 1) {
