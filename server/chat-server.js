@@ -11,19 +11,29 @@ const clients = [];
 
 // setInterval(printClientCount, 1000);
 
-ws.on('connection', (ws) => {
-	function getInitialThreads(userId) {
+const GIT = async (ws, userId) => {};
+
+ws.on('connection', async (ws) => {
+	const getInitialThreads = (userId) => {
 		models.Thread.find({ where: {}, include: 'Messages' }, (err, threads) => {
 			if (!err && threads) {
-				ws.send(
-					JSON.stringify({
-						type: 'INITIAL_THREADS',
-						data: threads
-					})
-				);
+				threads.map((thread, idx) => {
+					models.Users.find({ where: { id: { inq: thread.users } } }, (err3, user) => {
+						thread.profiles = users;
+
+						if (idx === thread.length - 1) {
+							ws.send(
+								JSON.stringify({
+									type: 'INITIAL_THREADS',
+									data: threads
+								})
+							);
+						}
+					});
+				});
 			}
 		});
-	}
+	};
 
 	function login(email, password) {
 		console.log('Logging the EM', email, password);
@@ -190,7 +200,8 @@ ws.on('connection', (ws) => {
 							where: { threadId: parsed.data.threadId },
 							order: 'data DESC',
 							skip: parsed.data.skip,
-							limit: 10
+							limit: 10,
+							include: 'Messages'
 						},
 						(err, messages) => {
 							if (!err && messages) {
@@ -206,8 +217,8 @@ ws.on('connection', (ws) => {
 					);
 					break;
 				case 'ADD_MESSAGE':
-					models.Thread.findById(parsed.threadId, (err, thread) => {
-						if (!err && thread) {
+					models.Thread.findById(parsed.threadId, (err2, thread) => {
+						if (!err2 && thread) {
 							models.Message.upsert(parsed.message, (err3, message) => {
 								if (!err3 && message) {
 									clients
