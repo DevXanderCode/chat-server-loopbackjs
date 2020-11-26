@@ -206,19 +206,21 @@ ws.on('connection', (ws) => {
 					);
 					break;
 				case 'ADD_MESSAGE':
-					models.Thread.findById(parsed.data.threadId, (err, thread) => {
+					models.Thread.findById(parsed.threadId, (err, thread) => {
 						if (!err && thread) {
-							models.Message.insert(parsed.data, (err3, message) => {
+							models.Message.upsert(parsed.message, (err3, message) => {
 								if (!err3 && message) {
-									clients.filter((client) => thread.users.indexOf(client.id) > -1).map((client) => {
-										client.ws.send(
-											JSON.stringify({
-												type: 'ADD_MESSAGE_TO_THREAD',
-												threadId: parsed.data.threadId,
-												message
-											})
-										);
-									});
+									clients
+										.filter((client) => thread.users.indexOf(client.id.toString()) > -1)
+										.map((client) => {
+											client.ws.send(
+												JSON.stringify({
+													type: 'ADD_MESSAGE_TO_THREAD',
+													threadId: parsed.threadId,
+													message
+												})
+											);
+										});
 								}
 							});
 						}
