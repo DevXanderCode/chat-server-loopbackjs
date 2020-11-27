@@ -18,7 +18,7 @@ ws.on('connection', async (ws) => {
 				threads.map((thread, idx) => {
 					// console.log('logging thread.users: ', thread.users);
 					models.User.find({ where: { id: { inq: thread.users } } }, (err3, users) => {
-						console.log('logging users', users);
+						// console.log('logging users', users);
 						thread.profiles = users;
 
 						if (idx === threads.length - 1) {
@@ -197,15 +197,16 @@ ws.on('connection', async (ws) => {
 				case 'THREAD_LOAD':
 					models.Thread.find(
 						{
-							where: { threadId: parsed.data.threadId },
+							where: { id: parsed.data.threadId },
 							order: 'data DESC',
 							skip: parsed.data.skip,
-							limit: 10,
-							include: 'Messages'
+							limit: 10
+							// include: 'Messages'
 						},
 						(err, messages) => {
-							getInitialThreads();
+							// getInitialThreads();
 							if (!err && messages) {
+								console.log('logging messages', JSON.stringify(messages));
 								ws.send(
 									JSON.stringify({
 										type: 'GOT_MESSAGES',
