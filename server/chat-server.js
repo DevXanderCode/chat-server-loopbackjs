@@ -11,17 +11,17 @@ const clients = [];
 
 // setInterval(printClientCount, 1000);
 
-const GIT = async (ws, userId) => {};
-
 ws.on('connection', async (ws) => {
 	const getInitialThreads = (userId) => {
 		models.Thread.find({ where: {}, include: 'Messages' }, (err, threads) => {
 			if (!err && threads) {
 				threads.map((thread, idx) => {
-					models.User.find({ where: { id: { inq: thread.users } } }, (err3, user) => {
+					// console.log('logging thread.users: ', thread.users);
+					models.User.find({ where: { id: { inq: thread.users } } }, (err3, users) => {
+						console.log('logging users', users);
 						thread.profiles = users;
 
-						if (idx === thread.length - 1) {
+						if (idx === threads.length - 1) {
 							ws.send(
 								JSON.stringify({
 									type: 'INITIAL_THREADS',
@@ -204,6 +204,7 @@ ws.on('connection', async (ws) => {
 							include: 'Messages'
 						},
 						(err, messages) => {
+							getInitialThreads();
 							if (!err && messages) {
 								ws.send(
 									JSON.stringify({
