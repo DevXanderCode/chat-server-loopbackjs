@@ -13,7 +13,7 @@ const clients = [];
 
 ws.on('connection', async (ws) => {
 	const getInitialThreads = (userId) => {
-		models.Thread.find({ where: {}, include: 'Messages' }, (err, threads) => {
+		models.Thread.find({ where: {}, order: 'lastUpdated DESC', include: 'Messages' }, (err, threads) => {
 			if (!err && threads) {
 				threads.map((thread, idx) => {
 					// console.log('logging thread.users: ', thread.users);
@@ -198,7 +198,7 @@ ws.on('connection', async (ws) => {
 					models.Thread.find(
 						{
 							where: { id: parsed.data.threadId },
-							order: 'data DESC',
+							order: 'date DESC',
 							skip: parsed.data.skip,
 							limit: 10
 							// include: 'Messages'
