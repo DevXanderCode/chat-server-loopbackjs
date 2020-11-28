@@ -13,7 +13,7 @@ const clients = [];
 
 ws.on('connection', async (ws) => {
 	const getInitialThreads = (userId) => {
-		models.Thread.find({ where: {}, order: 'lastUpdated DESC', include: 'Messages' }, (err, threads) => {
+		models.Thread.find({ where: {}, include: 'Messages', order: 'lastUpdated DESC' }, (err, threads) => {
 			if (!err && threads) {
 				threads.map((thread, idx) => {
 					// console.log('logging thread.users: ', thread.users);
@@ -238,6 +238,7 @@ ws.on('connection', async (ws) => {
 							});
 						}
 					});
+					getInitialThreads();
 					break;
 				default:
 					console.log('Nothing To See Here');
