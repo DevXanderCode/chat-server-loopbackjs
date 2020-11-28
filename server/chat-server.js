@@ -159,7 +159,7 @@ ws.on('connection', async (ws) => {
 					models.Thread.findOne(
 						{
 							where: {
-								and: [ { users: { like: parsed.data[0] } }, { users: { like: parsed.data[1] } } ]
+								and: [ { users: parsed.data[0] }, { users: parsed.data[1] } ]
 							}
 						},
 						(err2, thread) => {
