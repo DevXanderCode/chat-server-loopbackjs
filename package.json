@@ -1,7 +1,7 @@
 {
-  "name": "chatServer",
+  "name": "chat-server",
   "version": "1.0.0",
-  "main": "server/server.js",
+  "main": "server/chat-server.js",
   "engines": {
     "node": ">=6"
   },
